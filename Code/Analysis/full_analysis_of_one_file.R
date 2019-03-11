@@ -24,21 +24,20 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
     already_calculated <- tibble()
     successfully_calculated <- c()
   }
-  
-  if (str_detect(dat_file, "/edgelists/")) {
-    edge_list <- read_csv(dat_file, col_names=FALSE, col_types="ccd")
-  } else {
-    edge_list <- read_csv(dat_file, col_names=FALSE, col_types="cc")
-  }
+  # if this is an empirical file, it will have a weights column (that is
+  # currently ignored). Randomized versions are unweighted by default
+  edge_list <- read_csv(dat_file, col_names=FALSE,
+                        col_types=ifelse(str_detect(dat_file, "/edgelists/"),
+                                         "ccd", "cc"))
   g <- graph_from_data_frame(edge_list, directed=FALSE)
   V(g)$type <- V(g)$name %in% edge_list$X2
   B <- get.incidence(g)
-  
+
   n_rows <- nrow(B)
   n_cols <- ncol(B)
   n_links <- sum(B)
   size <- n_rows * n_cols
-  
+
   ## compute first few eigenvalues
   if (!all(c("l1", "l2", "l3", "ipr1", "ipr2", "ipr3") %in% successfully_calculated) | OVERWRITE) {
     spg <- tryCatch(igraph::spectrum(g, which=list(pos="LA", howmany=3), options=list(maxiter=5000)),
@@ -66,8 +65,7 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
     ipr2 <- already_calculated$ipr2
     ipr3 <- already_calculated$ipr3
   }
-  
-  
+
   deg <- as.vector(igraph::degree(g))
   d_row <- rowSums(B)
   d_col <- colSums(B)
@@ -77,18 +75,20 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
   E_d_col <- 1 + C_col * (n_rows - 1)
   deg_het_row <- mean(d_row^2) / mean(d_row)^2
   deg_het_col <- mean(d_col^2) / mean(d_col)^2
-  
+
   if (!all(c("l1_lap", "l2_lap", "l3_lap", "alg_conn") %in% successfully_calculated) | OVERWRITE) {
     lap_mat <- igraph::laplacian_matrix(g)
     lap_graph <- igraph::graph_from_adjacency_matrix(lap_mat, mode="undirected", weighted=TRUE)
-    lap_mat_eigs <- tryCatch(spectrum(lap_graph, which=list(pos="LA", howmany=3), options=list(maxiter=5000))$values,
+    lap_mat_eigs <- tryCatch(spectrum(lap_graph, which=list(pos="LA", howmany=3),
+                             options=list(maxiter=5000))$values,
                              error=function(e) {return(c(NA, NA, NA))})
     if (is.na(lap_mat_eigs[1]) & nrow(lap_mat) < MAX_SIZE) {
       lap_mat_eigs <- eigen(lap_mat, only.values=TRUE, symmetric=TRUE)$values}
     l1_lap <- lap_mat_eigs[1]
     l2_lap <- lap_mat_eigs[2]
     l3_lap <- lap_mat_eigs[3]
-    alg_conn <- tryCatch(spectrum(lap_graph, which=list(pos="SA", howmany=2), options=list(maxiter=5000))$values[2],
+    alg_conn <- tryCatch(spectrum(lap_graph, which=list(pos="SA", howmany=2),
+                         options=list(maxiter=5000))$values[2],
                          error=function(e) {return(NA)})
     if (is.na(alg_conn) & length(lap_mat_eigs) == nrow(lap_mat)) alg_conn <- tail(lap_mat_eigs, 2)[1]
   } else {
@@ -97,23 +97,17 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
     l3_lap <- already_calculated$l3_lap
     alg_conn <- already_calculated$alg_conn
   }
-  
+
   ## some motif metrics
   if (!all(c("H2", "H3", "H4", "H17") %in% successfully_calculated) | OVERWRITE) {
     # H1 <- length(E(g)) ## this is just the number of edges
     H3 <- ((d_row - 1) %*% B %*% (d_col - 1))[1]
     H2_r <- sum(choose(d_row, 2))
     H4_r <- sum(choose(d_row, 3))
-    # H9_r <- 
     H17_r <- sum(choose(d_row, 4))
-    # H18_r <- 
     H2_c <- sum(choose(d_col, 2))
     H4_c <- sum(choose(d_col, 3))
-    # H9_c <- 
     H17_c <- sum(choose(d_col, 4))
-    # H18_c <- 
-    # C4 <- 
-    # C6 <- 
     H2 <- H2_r + H2_c
     H4 <- H4_r + H4_c
     H17 <- H17_r + H17_c
@@ -123,14 +117,11 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
     H4 <- already_calculated$H4
     H17 <- already_calculated$H17
   }
-  
-  
+
   if (!all(c("clustering_c", "clustering_r") %in% successfully_calculated) | OVERWRITE) {
-    if (H3 < (100 * MAX_SIZE)) {
-      clustering_c <- bipartite::clustering_tm(igraph::as_edgelist(g)) /
-        (1 - (1 - (sum(d_row) / n_rows / n_cols)^2)^(n_cols - 2))
-      clustering_r <- bipartite::clustering_tm(B %>% t() %>% igraph::graph_from_incidence_matrix() %>% igraph::as_edgelist()) /
-        (1 - (1 - (sum(d_row) / n_rows / n_cols)^2)^(n_rows - 2))
+    if (H3 < (1000 * MAX_SIZE)) {
+      clustering_c <- clustering_tm(as_edgelist(g))
+      clustering_r <- clustering_tm(B %>% t() %>% graph_from_incidence_matrix() %>% as_edgelist())
     } else {
       clustering_c <- NA
       clustering_r <- NA
@@ -139,34 +130,39 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
     clustering_c <- already_calculated$clustering_c
     clustering_r <- already_calculated$clustering_r
   }
-  
-  if (!all(c("Q", "N.nodf", "N.temp", "N.olap") %in% successfully_calculated) | OVERWRITE) {
-    # only bother if networks are large enough for these global metrics to make sense
-    # to check this, remove full rows/cols and then remove empty rows/cols
-    # this could be implemented more rigorously, but is sufficient for now
+  if (!("Q" %in% successfully_calculated) | OVERWRITE) {
     if (length(V(g)) < MAX_SIZE & min(dim(B)) > 5) {
       ## modularity
       Q <- computeModules(B)@likelihood
+    } else {
+      ## modularity
+      Q <- NA
+    }
+  } else {
+    Q <- already_calculated$Q
+  }
+
+  if (!all(c("N.nodf", "N.temp", "N.olap") %in% successfully_calculated) | OVERWRITE) {
+
+    if (length(V(g)) < MAX_SIZE & min(dim(B)) > 5) {
       ## nestedness
       N.nodf <- nestednodf(B)$statistic["NODF"]
       N.temp <- nestedtemp(B)$statistic["temperature"]
       N.olap <- OverlapNestedness(B)
     } else {
-      ## modularity
-      Q <- NA
       ## nestedness
       N.nodf <- NA
       N.temp <- NA
       N.olap <- NA
     }
   } else {
-    Q <- already_calculated$Q
     N.nodf <- already_calculated$N.nodf
     N.temp <- already_calculated$N.temp
     N.olap <- already_calculated$N.olap
   }
-  
-  if (!all(c("deg_assort", "l1_er", "l1_cm", "l2_mp", "l3_mp", "l1_reg") %in% successfully_calculated) | OVERWRITE) {
+
+  if (!all(c("deg_assort", "l1_er", "l1_cm", "l2_mp", "l3_mp", "l1_reg") %in%
+          successfully_calculated) | OVERWRITE) {
     deg_assort <- igraph::assortativity.degree(g)
     d_row <- rowSums(B)
     d_col <- colSums(B)
@@ -191,9 +187,10 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
     l3_mp <- already_calculated$l3_mp
     l1_reg <- already_calculated$l1_reg
   }
-  
+
   ## centralities
-  if (!all(c("cent_between", "cent_close", "cent_eigen", "diam", "mean_path_length") %in% successfully_calculated) | OVERWRITE) {
+  if (!all(c("cent_between", "cent_close", "cent_eigen", "diam", "mean_path_length") %in%
+          successfully_calculated) | OVERWRITE) {
     cent_between <- centr_betw(g, directed=FALSE)$centralization
     cent_close <- centr_clo(g, mode="total")$centralization
     cent_eigen <- centr_eigen(g)$centralization
@@ -206,11 +203,11 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
     diam <- already_calculated$diam
     mean_path_length <- already_calculated$mean_path_length
   }
-  
+
   ## get identifying information
   split_path <- str_split(out_file, "/")[[1]] %>% tail(3)
   if (!dir.exists(dirname(out_file))) dir.create(dirname(out_file), recursive=TRUE)
-  
+
   ## add to results
   write_csv(tibble(
     randomization = split_path[1],
@@ -231,6 +228,20 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
     deg_het_row, deg_het_col),
     path=out_file)
 }
+
+## If running this file directly, uncomment the lines below (starting with `# cArgs <- commandArgs(TRUE)`)
+## and then call from terminal with the following arguments (in order):
+##     {DATA FILE} -- an edgelist file (such as one of those provided in the /Data directory).
+##     {OUTPUT FILE} -- the location of the output, usually similar to the data file, but in the /Results directory.
+##     [MAX NETWORK SIZE] -- the maximum size of network to run the more computationally heavy
+##                    analyses upon (this is implemented to limit time and memory load).
+##                    This argument is optional and defaults to 100 (a very conservative value)
+##                    if not provided.
+##     [OVERWRITE] -- a flag indicating whether or not old results should be recalculated. This
+##                    argument is optional and will default to FALSE if not provided. 
+## Examples:
+## Rscript full_analysis_one_file.R ../../Data/edgelists/crimes/Chicago_crimes_2016-01-01.csv ../../Results/empirical/crimes/Chicago_crimes_2016-01-01.csv
+## Rscript full_analysis_one_file.R ../../Data/edgelists/crimes/Chicago_crimes_2016-01-01.csv ../../Results/empirical/crimes/Chicago_crimes_2016-01-01.csv 1000 TRUE
 
 # cArgs <- commandArgs(TRUE)
 # dat_file <- cArgs[1]

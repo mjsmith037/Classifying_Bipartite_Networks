@@ -18,9 +18,13 @@ BIPLOT_WIDTH <- 6
 set.seed(0) # to replicate sampling
 
 #### KEY PARAMETERS
-N_FIT <- 100 # size of subsets used for fitting 
+N_FIT <- 100 # size of subsets used for fitting
 MIN_SIZE <- 5 # minimum size of networks included in analysis (both nrows and ncols >= MIN_SIZE)
 
+# compile all individual results into a single table of metrics
+full_results <- list.files(out_dir, recursive=TRUE, full.names=TRUE) %>%
+  mclapply(mc.cores=detectCores()-1, read_csv, col_types="cccddddddddddddddddddddddddddddddddd", progress=FALSE) %>%
+  bind_rows()
 
 # wemp <- ""
 # results_file <- "../Results/only_new-data_results.csv"
@@ -96,7 +100,7 @@ results_df <- results_df %>%
            type = str_replace(type, "anemonefish|ant-plant|pollination|seeddispersal", "mutualism"),
            type = str_replace(type, "bacteria-phage|host-parasitoid|parasitism|plant-herbivore", "antagonism")) %>%
     ## remove very small networks
-    filter(nrows >= MIN_SIZE, ncols >= MIN_SIZE) %>% 
+    filter(nrows >= MIN_SIZE, ncols >= MIN_SIZE) %>%
     ## remove outliers
     # filter(name != "Washington_DC_crimes_2016-12-25") %>%
     filter(name != "EP_2003")
@@ -166,13 +170,13 @@ if (is.na(MAX_SIG)) {
         mutate(n_tests = nrow(.),
                adjusted_p.value = p.adjust(p.value, method="bonferroni")) %>%
         filter(adjusted_p.value < 0.05)
-    
+
     # zzz %>% count(Variable1, wt=direction) %>% as.data.frame() %>% arrange(n)
     zzz %>% group_by(Variable2) %>% count(Variable1, wt=direction) %>%
         spread(Variable2, n, fill=0) %>% mutate(sum=ncols + nlinks + nrows,
                                                 total = abs(ncols) + abs(nlinks) + abs(nrows)) %>%
         as.data.frame() %>% arrange(total) %>% print()
-    
+
     # results_df %>%
     #     # mutate_(.dots=available_metrics) %>%
     #     filter(randomization == "None") %>%
@@ -189,7 +193,7 @@ if (is.na(MAX_SIG)) {
     #     select(xvar, type, dirsig) %>%
     #     spread(xvar, dirsig) %>%
     #     summarise_at(.vars=vars(-type), .funs=list(sum))
-    
+
     acceptable_metrics <- zzz %>%
         group_by(Variable2) %>%
         count(Variable1, wt=direction) %>%
@@ -210,14 +214,14 @@ if ("" == wemp) {
                type != "antagonism",
                type != "mutualism") %>%
         group_by(type) %>%
-        sample_n(N_FIT) %>% 
+        sample_n(N_FIT) %>%
         ungroup()
 } else {
     to_fit_df <- results_df %>%
         filter(randomization == "None",
                type != "biogeography") %>%
         group_by(type) %>%
-        sample_n(N_FIT) %>% 
+        sample_n(N_FIT) %>%
         ungroup()
 }
 
@@ -236,7 +240,7 @@ g_fit <- ggbiplot(pca_results, groups=to_fit_df$type, subgroups=to_fit_df$type, 
 ## add facetting variable to data
 g_fit$data$fitvtest <- "Fitting Data"
 
-## plot the test data 
+## plot the test data
 ## get the coordinates
 if ("" == wemp) {
     to_test_df <- results_df %>%
@@ -258,14 +262,14 @@ to_test_df <- to_test_df %>%
               funs((. - (pca_df %>% summarise_all(mean))$.) /
                        (pca_df %>% summarise_all(sd))$.))
 ## transform into PCA space
-to_test_df <- to_test_df %>% 
+to_test_df <- to_test_df %>%
     rowwise() %>%
     ## the ggbiplot code divides the coordinates by the standard deviation
     ## in the pca results. I don't know why, but to make the points line up
     ## with the ellipses, we do so here as well.
     do(as.numeric(.[names(Metrics)]) %*% pca_results$rotation %>%
-           sweep(2, pca_results$sdev, '/') %>% 
-           tbl_df()) %>% 
+           sweep(2, pca_results$sdev, '/') %>%
+           tbl_df()) %>%
     ungroup() %>%
     bind_cols(to_test_df) %>%
     mutate(fitvtest = "Testing Data")
@@ -297,7 +301,7 @@ if ("" == wemp) {
                type != "mutualism")
 } else {
     full_df <- results_df %>% filter(type != "biogeography")
-    
+
 }
 full_df <- full_df %>%
     mutate_(.dots=Metrics) %>%
@@ -306,13 +310,13 @@ full_df <- full_df %>%
               funs((. - (pca_df %>% summarise_all(mean))$.) /
                        (pca_df %>% summarise_all(sd))$.))
 ## transform into PCA space
-full_df <- full_df %>% 
+full_df <- full_df %>%
     rowwise() %>%
     ## the ggbiplot code divides the coordinates by the standard deviation
     ## in the pca results. I don't know why, but to make the points line up
     ## with the ellipses, we do so here as well.
     do(as.numeric(.[names(Metrics)]) %*% pca_results$rotation %>%
-           sweep(2, pca_results$sdev, '/') %>% 
+           sweep(2, pca_results$sdev, '/') %>%
            tbl_df()) %>%
     ungroup() %>%
     bind_cols(full_df)
@@ -327,7 +331,7 @@ g_rand <- g_fit %>% remove_geom("GeomPoint") +
     theme(legend.position="bottom",
           legend.title=element_blank())
 if (is.na(MAX_SIG)) {
-    cairo_pdf(filename=str_c("../Figures/RandComp_Main_", wemp, 
+    cairo_pdf(filename=str_c("../Figures/RandComp_Main_", wemp,
                              str_replace(basename(results_file), "\\.csv", ".pdf")),
               width=BIPLOT_WIDTH, height=2.55*BIPLOT_HEIGHT + 0.5)
     plot(g_rand)
@@ -344,7 +348,7 @@ if (is.na(MAX_SIG)) {
 emp_df <- results_df %>%
     filter(type == "antagonism" | type == "mutualism") %>% #| type == "biogeography") %>%
     filter(nrows >= MIN_SIZE, ncols >= MIN_SIZE) %>%
-    filter(randomization == "None") %>% 
+    filter(randomization == "None") %>%
     ## standardize feature1 between ecological networks
     mutate(feature1 = tolower(feature1),
            feature1 = ifelse(feature1 %in% c("antagonism", "mutualism"),
@@ -366,9 +370,9 @@ emp_df <- emp_df %>%
     ## in the pca results. I don't know why, but to make the points line up
     ## with the ellipses, we do so here as well.
     do(as.numeric(.[names(Metrics)]) %*% pca_results$rotation %>%
-           sweep(2, pca_results$sdev, '/') %>% 
+           sweep(2, pca_results$sdev, '/') %>%
            tbl_df()) %>%
-    ungroup() %>% 
+    ungroup() %>%
     bind_cols(emp_df)
 
 ## remove the fitting data points before adding the new ones
@@ -376,7 +380,7 @@ emp_legend <- (ggplot(emp_df) +
                    geom_point(aes(x=PC1, y=PC2, colour=type, shape=type), size=2, data=emp_df) +
                    geom_path(aes(x=PC1, y=PC2, color=type, group=type), data=emp_df %>%
                                  group_by(type) %>%
-                                 do(ellipse_path(.)) %>% 
+                                 do(ellipse_path(.)) %>%
                                  ungroup()) +
                    scale_shape_manual(values=c("antagonism"    = 4,
                                                "mutualism"     = 3)) +
@@ -420,12 +424,12 @@ pca_table_plot <- function(pcs_with_labels, n_pcs=5) {
     ellipses_df <- pcs_with_labels %>%
         select(type, matches(str_c("PC", 1:n_pcs, "$", collapse="|"))) %>%
         bind_cols(rename_at(., vars(starts_with("PC")), funs(str_c("x", .))) %>% select(-type)) %>%
-        gather("Axis", "Value", matches("^PC\\d+$")) %>% 
+        gather("Axis", "Value", matches("^PC\\d+$")) %>%
         gather("Axis1", "Value1", matches("^xPC\\d+$")) %>%
         filter(as.integer(str_extract(Axis, "\\d+")) > as.integer(str_extract(Axis1, "\\d+"))) %>%
-        mutate(Axis1 = str_replace_all(Axis1, "x", "")) %>% 
+        mutate(Axis1 = str_replace_all(Axis1, "x", "")) %>%
         group_by_at(vars(-Value, -Value1)) %>%
-        do(ellipse_path(., "Value1", "Value")) %>% 
+        do(ellipse_path(., "Value1", "Value")) %>%
         ungroup()
     pcs_with_labels %>%
         group_by(type) %>%
@@ -451,7 +455,7 @@ pca_table_plot <- function(pcs_with_labels, n_pcs=5) {
 #     # bind_rows(read_csv("../Results/SimpleDemo_old_results.csv")) %>%
 #     filter(type == "mutualism" | type == "antagonism") %>%
 #     filter(nrows >= MIN_SIZE, ncols >= MIN_SIZE) %>%
-#     filter(randomization == "None") %>% 
+#     filter(randomization == "None") %>%
 #     mutate(randomization = "Empirical") %>%
 #     mutate_(.dots=Metrics) %>%
 #     mutate_at(names(Metrics),
@@ -461,9 +465,9 @@ pca_table_plot <- function(pcs_with_labels, n_pcs=5) {
 # emp_df <- emp_df %>%
 #     rowwise() %>%
 #     do(as.numeric(.[names(Metrics)]) %*% pca_results$rotation %>%
-#            sweep(2, pca_results$sdev, '/') %>% 
+#            sweep(2, pca_results$sdev, '/') %>%
 #            tbl_df()) %>%
-#     ungroup() %>% 
+#     ungroup() %>%
 #     bind_cols(emp_df)
 emp_pca_table <- pca_table_plot(emp_df %>% select(type, matches("PC\\d+")))
 if (is.na(MAX_SIG)) {
@@ -503,14 +507,14 @@ if ("" == wemp) {
                         theme(legend.position="bottom",
                               legend.title=element_blank())) %>%
         extract_legend()
-    
+
     g_crimes <- g_fit %>% remove_geom("GeomPoint") +
         geom_point(aes(x=PC1, y=PC2, colour=feature1, shape=feature1), alpha=0.35,
                    data=full_df %>% filter(randomization == "Empirical", type == "crimes")) +
         geom_path(aes(x=PC1, y=PC2, color=feature1, group=feature1), data=full_df %>%
                       filter(randomization == "Empirical", type == "crimes") %>%
                       group_by(feature1) %>%
-                      do(ellipse_path(.)) %>% 
+                      do(ellipse_path(.)) %>%
                       ungroup()) +
         facet_wrap(~randomization, ncol=1) +
         scale_colour_manual(values=c("crimes"                  = "grey50",
@@ -533,7 +537,7 @@ if ("" == wemp) {
         # coord_cartesian(ylim=c(-0.75,0.5), xlim=c(0.85,1.75), expand=c(0,0)) +
         theme(legend.position="bottom",
               legend.title=element_blank())
-    
+
     if (is.na(MAX_SIG)) {
         ggsave(g_crimes %>% replace_legend(city_legend), width=BIPLOT_WIDTH, height=BIPLOT_HEIGHT + 0.5,
                filename=str_c("../Figures/CrimeFocus_sub_Main_",
@@ -549,7 +553,7 @@ if ("" == wemp) {
 #     geom_point(aes(x=PC1, y=PC2,
 #                    colour=str_c(feature2, ifelse(is.na(feature3), "na", feature3)),
 #                    shape=str_c(feature2, ifelse(is.na(feature3), "na", feature3))),
-#                alpha=0.75, size=2, 
+#                alpha=0.75, size=2,
 #                data=full_df %>% filter(randomization == "Empirical", type == "legislature")) +
 #     geom_path(aes(x=PC1, y=PC2,
 #                   color=str_c(feature2, ifelse(is.na(feature3), "na", feature3)),
@@ -557,7 +561,7 @@ if ("" == wemp) {
 #               data=full_df %>%
 #                   filter(randomization == "Empirical", type == "legislature") %>%
 #                   group_by(feature2, feature3) %>%
-#                   do(ellipse_path(.)) %>% 
+#                   do(ellipse_path(.)) %>%
 #                   ungroup()) +
 #     scale_colour_discrete() + scale_shape_discrete() +
 #     theme(legend.position="bottom",
@@ -571,7 +575,7 @@ if ("" == wemp) {
 #     geom_path(aes(x=PC1, y=PC2, color=feature1, group=feature1), data=full_df %>%
 #                   filter(randomization == "Empirical", type == "actor collaboration") %>%
 #                   group_by(feature1) %>%
-#                   do(ellipse_path(.)) %>% 
+#                   do(ellipse_path(.)) %>%
 #                   ungroup()) +
 #     facet_wrap(~randomization, ncol=1) + scale_color_discrete()
 
@@ -581,9 +585,9 @@ if ("" == wemp) {
     sub_emp_legend <- (ggplot(emp_df) +
                            geom_point(aes(x=PC1, y=PC2, colour=feature1, shape=feature1), size=2, data=emp_df) +
                            geom_path(aes(x=PC1, y=PC2, color=feature1, group=feature1), data=emp_df %>%
-                                         filter(feature1 != "anemone-fish") %>% 
+                                         filter(feature1 != "anemone-fish") %>%
                                          group_by(feature1) %>%
-                                         do(ellipse_path(.)) %>% 
+                                         do(ellipse_path(.)) %>%
                                          ungroup()) +
                            scale_shape_manual(values=c("anemone-fish"    = 0,
                                                        "ant-plant"       = 1,
@@ -636,7 +640,7 @@ if ("" == wemp) {
                                     "parasitism"          = 7)) +
         theme(legend.position="bottom",
               legend.title=element_blank())
-    
+
     if (is.na(MAX_SIG)) {
         ggsave(g_sub_emp %>% replace_legend(sub_emp_legend), width=BIPLOT_WIDTH, height=BIPLOT_HEIGHT + 0.5,
                filename=str_c("../Figures/EmpOverlay_Subtypes_Main_",

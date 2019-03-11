@@ -1,24 +1,24 @@
-# This repository is a work-in-progress, please have patience as we continue working to improve this documentation
-
-# Classifying_Bipartite_Networks
+# Telling ecological networks apart by their structure: a computational challenge
 
 This repository contains code and data to replicate and expand upon results
-published in XXXXXX. Want to jump right in? [Click here to skip to a quick demo.](a-demonstration)
+published in "Telling ecological networks apart by their structure: a
+computational challenge" (In Revision). Want to jump right in? [Click here to
+skip to a quick demo.](a-demonstration)
 
-In that work [Stefano Allesina](http://allesinalab.uchicago.edu/) and myself
-attemted to classify ecological bipartite networks using size- and
+In the aformentioned work [Stefano Allesina](http://allesinalab.uchicago.edu/)
+and myself attempted to classify ecological bipartite networks using size- and
 connectance-independent measures of network structure. While we found that such
 classification is in principal possible and in practice relatively easy for
-non-biological data sets, we were unable to achieve similar success with a
-large collection of ecological network data that has been published over the
-past hundred years.
+non-biological data sets, we were unable to achieve similar success with a large
+collection of ecological network data that has been published over the past
+hundred years.
 
 Naturally, there are a number of possible explanations for this lack of success,
 ranging from an unsurpassable level of variation in ecological data to a failure
 of metric/method selection. Having attempted to solve this ourselves for several
-years, we now turn to the scientific community writ large -- from the computer
+years, we now turn to the scientific community writ large&mdash;from the computer
 scientists with the most state-of-the-art techniques to the field ecologists
-with the most insight into biological relevance -- to pick up the gauntlet.
+with the most insight into biological relevance&mdash;to pick up the gauntlet.
 
 We have sought to clearly enunciate the problem as well as the relevant aspects
 of a successful solution and provide here a framework for the easy application
@@ -66,11 +66,11 @@ network.
 
 The second, [`/Code/Analysis`](Code/Analysis) contains the code needed to
 calculate various structural metrics for each of the data files as well as some
-code for ancillary analyses reported in XXXXXX.
+code for ancillary analyses reported in the associated publication.
 <!-- TODO: continue -->
 
 Finally, [`/Code/Plotting`](Code/Plotting) contains the code needed to produce
-the figures presented in XXXXXX.
+the figures presented in the associated publication.
 <!-- TODO: continue -->
 
 ### [`/Figures`](Figures)
@@ -86,3 +86,26 @@ Running the analysis as instructed results in the generation of a one-line
 <!-- TODO: continue -->
 
 # A Demonstration
+
+The data files and their randomizations are already provided in the /Data directory. To get
+a feel for the analysis, we will start with a simple demonstration using the metrics
+reported in the associated publication.
+
+To start, we will calculate a few structural metrics for each network: the
+two rightmost (largest real part) eigenvalues ($\lambda_1$ and $\lambda_2$) and
+three analytical estimates for these values ($\lambda^{cm}_1$, $\lambda^{er}_1$,
+$\lambda^{mp}_2$).
+
+The code `run_simple_demonstration_analysis.R` performs these calculations and produces
+an output file entitled `SimpleDemo_results.csv` in the /Results folder.
+
+Our hope is that these metrics will allow us to partition networks by type, and
+we can visualize the relative success of this using principal component analysis (PCA).
+For this, we turn to the code in the [`/Code/Plotting`](Code/Plotting) directory.
+
+The key figure for this can be generated using `plot_pca_simple_demonstration.R` which
+will save a new `.pdf` file into the [`/Figures`](Figures) folder entitled
+ `pca_simple_demonstration.pdf`.
+
+ Other figures can be generated using the `plot_pca_results.R` script, which will
+ be undergoing cleaning and annotation over the coming days.
