@@ -3,7 +3,7 @@
 This repository contains code and data to replicate and expand upon results
 published in "Telling ecological networks apart by their structure: a
 computational challenge" (In Revision). Want to jump right in? [Click here to
-skip to a quick demo.](a-demonstration)
+skip to a quick demo.](#a-demonstration)
 
 In the aformentioned work [Stefano Allesina](http://allesinalab.uchicago.edu/)
 and myself attempted to classify ecological bipartite networks using size- and
