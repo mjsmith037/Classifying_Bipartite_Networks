@@ -103,9 +103,9 @@ directory. To get a feel for the analysis, we will start with a simple
 demonstration using the metrics reported in the associated publication.
 
 To start, we will calculate a few structural metrics for each network: the two
-rightmost (largest real part) eigenvalues ($\lambda_1$ and $\lambda_2$) and
-three analytical estimates for these values ($\lambda^{cm}_1$, $\lambda^{er}_1$,
-$\lambda^{mp}_2$).
+rightmost (largest real part) eigenvalues (λ₁ and λ₂) and
+three analytical estimates for these values (a configuration model λ₁, an Erdős–Rényi λ₁,
+and a Marchenko–Pastur λ₂).
 
 The code
 [`run_simple_demonstration_analysis.R`](/Code/Analysis/run_simple_demonstration_analysis.R)
