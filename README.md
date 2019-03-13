@@ -68,14 +68,16 @@ The second, [`/Code/Analysis`](Code/Analysis) contains the code needed to
 calculate various structural metrics for each of the data files as well as some
 code for ancillary analyses reported in the associated publication.
 
-The key scripts for this are `full_analysis_of_one_file.R` and
-`run_analysis_over_all_files.R`. The latter is a wrapper for the former, running
-it for each data file in a directory. The former takes in an edgelist file (such
-as one of the files in the [`/Data`](Data) directory) and calculates a number of
-network-structural metrics, returning a corresponding output file in the
-[`/Results`](Results) directory. This file will consist of a single row table
-with each column holding the value for a different metric.
-<!-- TODO: continue -->
+We have included all of the metrics we calculated in the [`/Results`](Results)
+folder already, but if you wanted to re-run these calculations or wanted to add
+new metrics to the list, the key scripts for this are
+`full_analysis_of_one_file.R` and `run_analysis_over_all_files.R`. The latter is
+a wrapper for the former, running it for each data file in a directory. The
+former takes in an edgelist file (such as one of the files in the
+[`/Data`](Data) directory) and calculates a number of network-structural
+metrics, returning a corresponding output file in the [`/Results`](Results)
+directory. This file will consist of a single row table with each column holding
+the value for a different metric.
 
 Finally, [`/Code/Plotting`](Code/Plotting) contains the code needed to produce
 the figures presented in the associated publication.
@@ -90,30 +92,32 @@ by the plotting scripts mentioned above.
 ### [`/Results`](Results)
 
 Running the analysis as instructed results in the generation of a one-line
-`.csv` result file for each network in the data folder.
-<!-- TODO: continue -->
+`.csv` result file for each network in the data folder. As mentioned above,
+this folder is pre-filled with the metrics we calculated for the paper.
 
 # A Demonstration
 
-The data files and their randomizations are already provided in the /Data directory. To get
-a feel for the analysis, we will start with a simple demonstration using the metrics
-reported in the associated publication.
+The data files and their randomizations are already provided in the /Data
+directory. To get a feel for the analysis, we will start with a simple
+demonstration using the metrics reported in the associated publication.
 
-To start, we will calculate a few structural metrics for each network: the
-two rightmost (largest real part) eigenvalues ($\lambda_1$ and $\lambda_2$) and
+To start, we will calculate a few structural metrics for each network: the two
+rightmost (largest real part) eigenvalues ($\lambda_1$ and $\lambda_2$) and
 three analytical estimates for these values ($\lambda^{cm}_1$, $\lambda^{er}_1$,
 $\lambda^{mp}_2$).
 
-The code `run_simple_demonstration_analysis.R` performs these calculations and produces
-an output file entitled `SimpleDemo_results.csv` in the /Results folder.
+The code `run_simple_demonstration_analysis.R` performs these calculations and
+produces an output file entitled `SimpleDemo_results.csv` in the /Results
+folder.
 
 Our hope is that these metrics will allow us to partition networks by type, and
-we can visualize the relative success of this using principal component analysis (PCA).
-For this, we turn to the code in the [`/Code/Plotting`](Code/Plotting) directory.
+we can visualize the relative success of this using principal component analysis
+(PCA). For this, we turn to the code in the [`/Code/Plotting`](Code/Plotting)
+directory.
 
-The key figure for this can be generated using `plot_pca_simple_demonstration.R` which
-will save a new `.pdf` file into the [`/Figures`](Figures) folder entitled
- `pca_simple_demonstration.pdf`.
+The key figure for this can be generated using `plot_pca_simple_demonstration.R`
+which will save a new `.pdf` file into the [`/Figures`](Figures) folder entitled
+`pca_simple_demonstration.pdf`.
 
- Other figures can be generated using the `plot_pca_results.R` script, which will
- be undergoing cleaning and annotation over the coming days.
+ Other figures can be generated using the `plot_pca_results.R` script, which
+ will be undergoing cleaning and annotation over the coming days.
