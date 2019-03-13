@@ -71,9 +71,10 @@ code for ancillary analyses reported in the associated publication.
 We have included all of the metrics we calculated in the [`/Results`](Results)
 folder already, but if you wanted to re-run these calculations or wanted to add
 new metrics to the list, the key scripts for this are
-`full_analysis_of_one_file.R` and `run_analysis_over_all_files.R`. The latter is
-a wrapper for the former, running it for each data file in a directory. The
-former takes in an edgelist file (such as one of the files in the
+[`full_analysis_of_one_file.R`](/Code/Analysis/full_analysis_of_one_file.R) and
+[`run_analysis_over_all_files.R`](/Code/Analysis/run_analysis_over_all_files.R).
+The latter is a wrapper for the former, running it for each data file in a
+directory. The former takes in an edgelist file (such as one of the files in the
 [`/Data`](Data) directory) and calculates a number of network-structural
 metrics, returning a corresponding output file in the [`/Results`](Results)
 directory. This file will consist of a single row table with each column holding
@@ -106,8 +107,10 @@ rightmost (largest real part) eigenvalues ($\lambda_1$ and $\lambda_2$) and
 three analytical estimates for these values ($\lambda^{cm}_1$, $\lambda^{er}_1$,
 $\lambda^{mp}_2$).
 
-The code `run_simple_demonstration_analysis.R` performs these calculations and
-produces an output file entitled `SimpleDemo_results.csv` in the /Results
+The code
+[`run_simple_demonstration_analysis.R`](/Code/Analysis/run_simple_demonstration_analysis.R)
+performs these calculations and produces an output file entitled
+[`SimpleDemo_results.csv`](/Results/SimpleDemo_results.csv) in the /Results
 folder.
 
 Our hope is that these metrics will allow us to partition networks by type, and
@@ -115,9 +118,11 @@ we can visualize the relative success of this using principal component analysis
 (PCA). For this, we turn to the code in the [`/Code/Plotting`](Code/Plotting)
 directory.
 
-The key figure for this can be generated using `plot_pca_simple_demonstration.R`
+The key figure for this can be generated using
+[`plot_pca_simple_demonstration.R`](/Code/Plotting/plot_pca_simple_demonstration.R)
 which will save a new `.pdf` file into the [`/Figures`](Figures) folder entitled
 `pca_simple_demonstration.pdf`.
 
- Other figures can be generated using the `plot_pca_results.R` script, which
- will be undergoing cleaning and annotation over the coming days.
+ Other figures can be generated using the
+ [`plot_pca_results.R`](/Code/Plotting/plot_pca_results.R) script, which will be
+ undergoing cleaning and annotation over the coming days.
