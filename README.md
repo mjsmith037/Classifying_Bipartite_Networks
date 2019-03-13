@@ -86,7 +86,7 @@ the figures presented in the associated publication.
 
 ### [`/Figures`](Figures)
 
-This folder, now empty, will be the default output folder for figures generated
+This folder, now empty except for the [`full_pca_simple_demonstration.pdf`](/Figures/full_pca_simple_demonstration.pdf), which results from the simple demonstration outlined below, will be the default output folder for figures generated
 by the plotting scripts mentioned above.
 <!-- TODO: continue -->
 
