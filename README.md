@@ -67,6 +67,14 @@ network.
 The second, [`/Code/Analysis`](Code/Analysis) contains the code needed to
 calculate various structural metrics for each of the data files as well as some
 code for ancillary analyses reported in the associated publication.
+
+The key scripts for this are `full_analysis_of_one_file.R` and
+`run_analysis_over_all_files.R`. The latter is a wrapper for the former, running
+it for each data file in a directory. The former takes in an edgelist file (such
+as one of the files in the [`/Data`](Data) directory) and calculates a number of
+network-structural metrics, returning a corresponding output file in the
+[`/Results`](Results) directory. This file will consist of a single row table
+with each column holding the value for a different metric.
 <!-- TODO: continue -->
 
 Finally, [`/Code/Plotting`](Code/Plotting) contains the code needed to produce

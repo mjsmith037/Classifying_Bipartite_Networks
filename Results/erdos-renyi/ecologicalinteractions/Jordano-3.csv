@@ -1,0 +1,2 @@
+randomization,name,type,l1,l2,l3,ipr1,ipr2,ipr3,l1_cm,l1_er,l1_reg,l2_mp,l3_mp,l1_lap,l2_lap,l3_lap,alg_conn,clustering_c,clustering_r,deg_assort,Q,N.olap,N.temp,N.nodf,H2,H3,H4,H17,cent_between,cent_close,cent_eigen,diam,mean_path_length,deg_het_row,deg_het_col
+erdos-renyi,Jordano-3,ecologicalinteractions,2,1,1,0.16666666666666663,0.25000000000000017,0.25,2,2.25,2,1.632993161855452,0.47222628831094693,4,3.000000000000001,3,0.9999999999999996,1,1,NaN,0.22222222222222224,-1,62.48019491484842,0,6,6,0,0,0,1.9984014443252816e-16,2.220446049250313e-16,3,1.8,1,1
