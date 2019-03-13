@@ -124,5 +124,12 @@ which will save a new `.pdf` file into the [`/Figures`](Figures) folder entitled
 `pca_simple_demonstration.pdf`.
 
  Other figures can be generated using the
- [`plot_pca_results.R`](/Code/Plotting/plot_pca_results.R) script, which will be
- undergoing cleaning and annotation over the coming days.
+ [`plot_pca_results.R`](/Code/Plotting/plot_pca_results.R) script, which
+ constructs the pca space more generally and then calls the relevant
+ figure-specific code to generate each of the first three figures of the main
+ text, as well as their analogues in the supplementary information. The data and
+ figures associated with the Nestedness/Modularity component of the work can be
+ generated using the
+ [`nest_mod_comparison.R`](/Code/Plotting/nest_mod_comparison.R) and
+ [`pca_only_mod_nest.R`](/Code/Plotting/pca_only_mod_nest.R) scripts, which will
+ be being cleaned and annotated over the coming days.

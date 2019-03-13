@@ -1,13 +1,13 @@
-suppressPackageStartupMessages(library(tools))
-suppressPackageStartupMessages(library(stringr))
-suppressPackageStartupMessages(library(bipartite))
-suppressPackageStartupMessages(library(igraph))
-suppressPackageStartupMessages(library(glue))
-suppressPackageStartupMessages(library(assertthat))
-suppressPackageStartupMessages(library(magrittr))
-suppressPackageStartupMessages(library(tidyverse))
+library(tools)
+library(stringr)
+library(bipartite)
+library(igraph)
+library(glue)
+library(assertthat)
+library(magrittr)
+library(tidyverse)
 
-suppressPackageStartupMessages(source("strona_overlap_nestedness.R"))
+source("strona_overlap_nestedness.R")
 
 set.seed(0)
 
@@ -238,7 +238,7 @@ analyze_one_file <- function(dat_file, out_file, MAX_SIZE, OVERWRITE) {
 ##                    This argument is optional and defaults to 100 (a very conservative value)
 ##                    if not provided.
 ##     [OVERWRITE] -- a flag indicating whether or not old results should be recalculated. This
-##                    argument is optional and will default to FALSE if not provided. 
+##                    argument is optional and will default to FALSE if not provided.
 ## Examples:
 ## Rscript full_analysis_one_file.R ../../Data/edgelists/crimes/Chicago_crimes_2016-01-01.csv ../../Results/empirical/crimes/Chicago_crimes_2016-01-01.csv
 ## Rscript full_analysis_one_file.R ../../Data/edgelists/crimes/Chicago_crimes_2016-01-01.csv ../../Results/empirical/crimes/Chicago_crimes_2016-01-01.csv 1000 TRUE

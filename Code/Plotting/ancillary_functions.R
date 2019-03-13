@@ -14,19 +14,19 @@ remove_geom <- function(ggplot2_object, geom_type) {
 
 ## This function takes a ggplot object and replaces the legend with a provided
 ## alternative
-replace_legend <- function(plot_obj, new_legend) { 
-    tmp <- ggplot_gtable(ggplot_build(plot_obj)) 
-    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box") 
+replace_legend <- function(plot_obj, new_legend) {
+    tmp <- ggplot_gtable(ggplot_build(plot_obj))
+    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
     tmp$grobs[[leg]] <- new_legend
     return(tmp)
 }
 
 ## this function takes a ggplot object and returns the grob that contains the
 ## legend (for insertion into another plot)
-extract_legend <- function(plot_obj) { 
-    tmp <- ggplot_gtable(ggplot_build(plot_obj)) 
-    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box") 
-    legend <- tmp$grobs[[leg]] 
+extract_legend <- function(plot_obj) {
+    tmp <- ggplot_gtable(ggplot_build(plot_obj))
+    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+    legend <- tmp$grobs[[leg]]
     return(legend)
 }
 
@@ -53,7 +53,7 @@ pca_table_plot_data <- function(dat, n_pcs) {
     zzz %>%
         group_by(Axis) %>%
                do(lapply(unique(zzz$Axis),
-                         function(xx) 
+                         function(xx)
                              bind_cols(., filter(zzz, Axis == xx))) %>%
                       bind_rows())
 }
